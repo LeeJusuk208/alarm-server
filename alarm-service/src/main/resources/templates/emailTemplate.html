@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Email Template</title>
+</head>
+<body>
+<h1>지금이에요!</h1>
+<p>고객님께서 알람을 설정한 상품 가운데 일부가 현재 설정 가격 이하로 판매 중입니다:</p>
+<div th:each="imageUrl, i : ${imageUrls}" display="block">
+    <p th:text="'[알람' + ${i.index+1}+']'"></p>
+    <img th:src="${imageUrl}" alt="Image">
+    <div>
+        <p th:text="'상품명 : ' + ${goodsNames[i.index]}"></p>
+        <p th:text="'설정 가격 : ' +  ${goodsTargetPrices[i.index]}"></p>
+        <p th:text="'현재 가격 : ' + ${goodsCurrentPrices[i.index]}"></p>
+        <p th:text="'Link : ' + ${goodsUrls[i.index]}"></p>
+    </div>
+</div>
+</body>
+</html>
