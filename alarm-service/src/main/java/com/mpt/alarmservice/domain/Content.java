@@ -2,7 +2,6 @@ package com.mpt.alarmservice.domain;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 public class Content {
@@ -15,8 +14,9 @@ public class Content {
     private String img;
     private String url;
     private int targetPrice;
+
     @Builder
-    public Content(Goods goods, int targetPrice){
+    public Content(Goods goods, int targetPrice) {
         this.id = goods.getId();
         this.name = goods.getName();
         this.del_price = goods.getDel_price();
