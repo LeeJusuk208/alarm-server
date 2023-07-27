@@ -1,12 +1,11 @@
 package com.mpt.alarmservice.service;
 
+import com.mpt.alarmservice.dao.AlarmDao;
 import com.mpt.alarmservice.dao.GoodsDao;
 import com.mpt.alarmservice.domain.Alarm;
 import com.mpt.alarmservice.domain.Content;
 import com.mpt.alarmservice.domain.Goods;
 import jakarta.mail.internet.MimeMessage;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -18,19 +17,24 @@ import org.thymeleaf.context.Context;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-@Slf4j
+
 @Service
-@AllArgsConstructor
 public class SendEmailService {
-    @Autowired
     private final GoodsDao goodsDao;
-    @Autowired
+    private final AlarmDao alarmDao;
     private final JavaMailSender mailSender;
-    @Autowired
     private TemplateEngine templateEngine;
 
+    @Autowired
+    public SendEmailService(GoodsDao goodsDao, AlarmDao alarmDao, JavaMailSender mailSender, TemplateEngine templateEngine) {
+        this.goodsDao = goodsDao;
+        this.alarmDao = alarmDao;
+        this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
+    }
 
-    public void sendSimpleMessage(List<Alarm> alarmList){
+
+    public void sendSimpleMessage(List<Alarm> alarmList) {
 
         HashMap<String, ArrayList<Content>> mailList = getMailList(alarmList);
         for (String email : mailList.keySet()) {
@@ -41,8 +45,8 @@ public class SendEmailService {
             String mailText = "";
             ArrayList<Content> contentsList = mailList.get(email);
             for (Content content : contentsList) {
-                mailText += "goods_id: "+ content.getId() + " ";
-                mailText += "goods_price: "+ content.getPrice() + " ";
+                mailText += "goods_id: " + content.getId() + " ";
+                mailText += "goods_price: " + content.getPrice() + " ";
                 mailText += "\n";
             }
 
@@ -53,7 +57,7 @@ public class SendEmailService {
 
     }
 
-    public void sendHtmlMessage(List<Alarm> alarmList){
+    public void sendHtmlMessage(List<Alarm> alarmList) {
 
         HashMap<String, ArrayList<Content>> mailList = getMailList(alarmList);
         for (String email : mailList.keySet()) {
@@ -66,7 +70,7 @@ public class SendEmailService {
                 String content = templateEngine.process("emailTemplate", context);
                 helper.setText(content, true);
                 mailSender.send(message);
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -110,13 +114,12 @@ public class SendEmailService {
             String email = alarm.getEmail();
             int goodsId = alarm.getGoodsId();
             Goods goods = getGoods(goodsMap, goodsId);
-            if(alarm.getTargetPrice() >= goods.getPrice()){
+            if (alarm.getTargetPrice() >= goods.getPrice()) {
                 ArrayList<Content> contentList;
                 Content content = new Content(goods, alarm.getTargetPrice());
-                if(mailList.containsKey(email)){
+                if (mailList.containsKey(email)) {
                     contentList = mailList.get(email);
-                }
-                else{
+                } else {
                     contentList = new ArrayList<>();
                 }
                 contentList.add(content);
@@ -129,13 +132,17 @@ public class SendEmailService {
     private Goods getGoods(HashMap<Integer, Goods> goodsMap, int goodsId) {
         Goods goods;
 
-        if(goodsMap.containsKey(goodsId)){
+        if (goodsMap.containsKey(goodsId)) {
             goods = goodsMap.get(goodsId);
-        }else{
+        } else {
             goods = goodsDao.getGoodsById(goodsId);
             goodsMap.put(goodsId, goods);
         }
 
         return goods;
+    }
+
+    public List<Alarm> findAlarmList() {
+        return alarmDao.getAlarmList();
     }
 }

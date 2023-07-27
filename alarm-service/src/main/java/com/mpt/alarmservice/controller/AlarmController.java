@@ -1,68 +1,49 @@
 package com.mpt.alarmservice.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mpt.alarmservice.config.UrlConfig;
-import com.mpt.alarmservice.dao.AlarmDao;
-import com.mpt.alarmservice.domain.Alarm;
+import com.mpt.alarmservice.dto.AlarmDto;
+import com.mpt.alarmservice.dto.UserResponse;
+import com.mpt.alarmservice.service.AlarmService;
 import com.mpt.alarmservice.service.SendEmailService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/alarm")
 public class AlarmController {
 
-    @Autowired
-    AlarmDao alarmDao;
-    @Autowired
-    SendEmailService sendEmailService;
-    private final RestTemplate restTemplate;
+    private final SendEmailService sendEmailService;
+    private final AlarmService alarmService;
 
-    public AlarmController(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public AlarmController(SendEmailService sendEmailService, AlarmService alarmService) {
+        this.sendEmailService = sendEmailService;
+        this.alarmService = alarmService;
     }
 
 
     @PostMapping("")
-    public ResponseEntity<String> createAlarm(@RequestHeader HttpHeaders httpHeaders, @RequestParam HashMap<String, String> param) {
-
-        if (param.isEmpty()) {
-            param.put("alarmtype", "yesterday");
-            param.put("setprice", "1");
-            param.put("curprice", "yesterday");
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", httpHeaders.getFirst("Authorization"));
-        HttpEntity<MultiValueMap<String, String>> requestHeader = new HttpEntity(headers);
-        String url;
-
-        ResponseEntity<String> result = restTemplate.exchange(url, HttpMethod.GET, requestHeader, String.class);
+    public ResponseEntity<String> createAlarm(@RequestHeader HttpHeaders httpHeaders, @RequestParam(required = false) HashMap<String, String> param) throws JsonProcessingException {
+        UserResponse userResponse = alarmService.getUserResponse(alarmService.responseEntity(httpHeaders));
+        ResponseEntity<String> result = alarmService.alarmRegisterResult(userResponse, param);
         return ResponseEntity.ok(result.getBody());
+    }
+
+    @GetMapping("/existence/{goods_id}")
+    public ResponseEntity<AlarmDto> hasAlarm(@RequestHeader HttpHeaders httpHeaders, @PathVariable(required = false) String goods_id) throws JsonProcessingException {
+        UserResponse userResponse = alarmService.getUserResponse(alarmService.responseEntity(httpHeaders));
+        ResponseEntity<AlarmDto> result = alarmService.hasAlarm(userResponse, Integer.parseInt(goods_id));
+        return result;
     }
 
     @GetMapping("/send/email")
     public void sendAlarmWithEmails() {
-
-        List<Alarm> alarmList = alarmDao.getAlarmList();
-
         try {
-            sendEmailService.sendHtmlMessage(alarmList);
+            sendEmailService.sendHtmlMessage(sendEmailService.findAlarmList());
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 }
