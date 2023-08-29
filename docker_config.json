@@ -1,0 +1,5 @@
+{
+  "version": "2",
+  "docker_hub_username": "jusuk",
+  "docker_hub_repository": "alarm-server"
+}

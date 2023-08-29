@@ -92,7 +92,7 @@ public class AlarmDao {
             jdbcUtil.close(rs, psmt, conn);
             return alarmDto;
         } catch (Exception e) {
-            e.printStackTrace();
+            alarmDto = new AlarmDto("none","none",-1);
         } finally {
             jdbcUtil.close(rs, psmt, conn);
         }

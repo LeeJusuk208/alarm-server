@@ -31,14 +31,13 @@ public class AlarmController {
         return ResponseEntity.ok(result.getBody());
     }
 
-    @GetMapping("/existence/{goods_id}")
+    @GetMapping("/{goods_id}")
     public ResponseEntity<AlarmDto> hasAlarm(@RequestHeader HttpHeaders httpHeaders, @PathVariable(required = false) String goods_id) throws JsonProcessingException {
         UserResponse userResponse = alarmService.getUserResponse(alarmService.responseEntity(httpHeaders));
-        ResponseEntity<AlarmDto> result = alarmService.hasAlarm(userResponse, Integer.parseInt(goods_id));
-        return result;
+        return alarmService.hasAlarm(userResponse, Integer.parseInt(goods_id));
     }
 
-    @GetMapping("/send/email")
+    @GetMapping("/sendmail")
     public void sendAlarmWithEmails() {
         try {
             sendEmailService.sendHtmlMessage(sendEmailService.findAlarmList());

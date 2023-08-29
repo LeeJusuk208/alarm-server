@@ -1,18 +1,17 @@
 package com.mpt.alarmservice.config;
 
 public enum UrlConfig {
-    API_SERVER("mpt-api-server.com"),
-    AUTH_SERVER("mpt-auth-server.com"),
-    GOODS_SERVER("mpt-goods-server.com"),
-    ALARM_SERVER("mpt-alarm-server.com");
+    AUTH_SERVER("auth-server","8080");
 
     private String ip;
+    private String port;
 
-    UrlConfig(String ip) {
+    UrlConfig(String ip,String port) {
         this.ip = ip;
+        this.port = port;
     }
 
     public String getUrl() {
-        return "http://" + ip;
+        return "http://" + ip + ":" + port;
     }
 }
